@@ -19,28 +19,49 @@ const lastClaimDateToDayOfWeek = (lastClaimDate: number | null) => {
     return date.getDay() - 1;
 };
 
+const initialData = {
+    coins: 0,
+    lastClaimDate: null,
+    streak: 0,
+};
+
 function App() {
     const { id, isConnected } = useFirebase();
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [data, setData] = useState<{ coins: number; lastClaimDate: number; streak: number }>({
-        coins: 0,
-        lastClaimDate: 1684266628188,
-        streak: 0,
-    });
+    const [data, setData] = useState<{
+        coins: number;
+        lastClaimDate: number | null;
+        streak: number;
+    }>(initialData);
+
+    console.log(data);
 
     useEffect(() => {
-        if (!isConnected) return;
+        if (!isConnected) {
+            setData(initialData);
+            return;
+        }
+        // Getting cors from here, didn't have time to diagnose
         (async () => {
-            const token = localStorage.getItem('streaks-token');
-            if (!token) throw new Error('No token found');
-            const response = await fetch(`http://localhost:3001/streakData/${id}`, {
-                method: 'GET',
-                headers: {
-                    Authorization: token as string,
-                },
-            });
+            try {
+                const token = localStorage.getItem('streaks-token');
+                if (!token) throw new Error('No token found');
+                const response = await fetch(`http://localhost:3001/streakData/${id}`, {
+                    method: 'GET',
+                    headers: {
+                        Authorization: token as string,
+                    },
+                });
 
-            console.log(response);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    setData(data.data);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error: any) {
+                console.log(error);
+            }
         })();
     }, [id, isConnected]);
 
@@ -57,7 +78,6 @@ function App() {
                 },
             });
             const data = await response.json();
-            console.log(data);
             if (data.status === 'success') {
                 setData(data.data);
             } else {
@@ -73,60 +93,66 @@ function App() {
         <Layout>
             <Background />
             <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-                <div className="flex flex-col items-center space-y-8">
-                    <div className="bg-col flex h-40 w-40 items-center justify-center rounded-full">
-                        <p className="text-center text-4xl font-semibold text-indigo-600">
-                            {data.streak}
-                        </p>
-                    </div>
-                    <div className="flex space-x-2">
-                        {week.map((day, index) => {
-                            const lastClaimedDay = lastClaimDateToDayOfWeek(data.lastClaimDate);
-                            const isHit =
-                                lastClaimedDay !== null
-                                    ? lastClaimedDay - data.streak <= index &&
-                                      index <= lastClaimedDay
-                                    : false;
+                {isConnected ? (
+                    <div className="flex flex-col items-center space-y-8">
+                        <div className="bg-col flex h-40 w-40 items-center justify-center rounded-full">
+                            <p className="text-center text-4xl font-semibold text-indigo-600">
+                                {data.streak}
+                            </p>
+                        </div>
+                        <div className="flex space-x-2">
+                            {week.map((day, index) => {
+                                const lastClaimedDay = lastClaimDateToDayOfWeek(data.lastClaimDate);
+                                const isHit =
+                                    lastClaimedDay !== null
+                                        ? lastClaimedDay - data.streak < index &&
+                                          index <= lastClaimedDay
+                                        : false;
 
-                            return (
-                                <div
-                                    key={`${day}-${index}`}
-                                    className="flex flex-col items-center justify-between space-y-2"
-                                >
-                                    <p
-                                        className={`text-sm ${
-                                            isHit ? 'text-orange-400' : 'text-gray-400'
-                                        } font-semibold leading-6`}
+                                return (
+                                    <div
+                                        key={`${day}-${index}`}
+                                        className="flex flex-col items-center justify-between space-y-2"
                                     >
-                                        {day}
-                                    </p>
-                                    {isHit ? (
-                                        <div className="relative h-6 w-6 rounded-full bg-orange-500">
-                                            <div className="absolute top-[-50%]">
-                                                <GiFlame
-                                                    size="1.5rem"
-                                                    color="rgb(249 115 22 / var(--tw-bg-opacity))"
-                                                />
+                                        <p
+                                            className={`text-sm ${
+                                                isHit ? 'text-orange-400' : 'text-gray-400'
+                                            } font-semibold leading-6`}
+                                        >
+                                            {day}
+                                        </p>
+                                        {isHit ? (
+                                            <div className="relative h-6 w-6 rounded-full bg-orange-500">
+                                                <div className="absolute top-[-50%]">
+                                                    <GiFlame
+                                                        size="1.5rem"
+                                                        color="rgb(249 115 22 / var(--tw-bg-opacity))"
+                                                    />
+                                                </div>
+                                                <div className="absolute">
+                                                    <CgCheck size="1.5rem" color="white" />
+                                                </div>
                                             </div>
-                                            <div className="absolute">
-                                                <CgCheck size="1.5rem" color="white" />
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="h-6 w-6 rounded-full bg-gray-300" />
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
+                                        ) : (
+                                            <div className="h-6 w-6 rounded-full bg-gray-300" />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
 
-                    <button
-                        className="flex w-[150px] items-center justify-center rounded-md bg-black px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        onClick={handleCheckIn}
-                    >
-                        {isLoading ? <Spinner /> : 'Check-in'}
-                    </button>
-                </div>
+                        <button
+                            className="flex w-[150px] items-center justify-center rounded-md bg-black px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                            onClick={handleCheckIn}
+                        >
+                            {isLoading ? <Spinner /> : 'Check-in'}
+                        </button>
+                    </div>
+                ) : (
+                    <p className="text-center text-4xl font-semibold text-indigo-600">
+                        Please login.
+                    </p>
+                )}
             </div>
         </Layout>
     );
