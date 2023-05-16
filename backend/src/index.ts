@@ -86,8 +86,11 @@ const main = async () => {
 
             const lastClaimDate = userData.lastClaimDate;
 
-            // Check if 24h have passed
-            if (now - lastClaimDate >= claimIntervalMs) {
+            // Check if between 24h and 48h have passed since last claim
+            if (
+                now - lastClaimDate >= claimIntervalMs &&
+                now - lastClaimDate < claimIntervalMs * 2
+            ) {
                 const streak = userData.streak + 1;
                 let coins = userData.coins; // Daily reward is 10 coins
                 let bonusClaimed = userData.bonusClaimed;
