@@ -14,8 +14,7 @@ const streakToBonus = {
     7: 50,
 };
 const initialCoins = 0;
-// const claimIntervalMs = 86400000; // 24h
-const claimIntervalMs = 6000; // 6s
+const claimIntervalMs = 86400000; // 24h
 
 const main = async () => {
     const PORT = process.env.PORT || 3001;
