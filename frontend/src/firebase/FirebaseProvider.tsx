@@ -42,10 +42,8 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const signIn = useCallback(async () => {
-        console.log('sign');
         if (!provider) throw new Error('Provider not initialized');
 
-        console.log('login');
         setIsConnecting(true);
         const auth = getAuth();
 

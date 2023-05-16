@@ -34,7 +34,7 @@ function App() {
         streak: number;
     }>(initialData);
 
-    console.log(data);
+    // No time to use a state manager
 
     useEffect(() => {
         if (!isConnected) {
@@ -60,12 +60,11 @@ function App() {
                     throw new Error(data.message);
                 }
             } catch (error: any) {
-                console.log(error);
+                console.log(error); // toast
             }
         })();
     }, [id, isConnected]);
 
-    // No time to use a state manager
     const handleCheckIn = async () => {
         try {
             setIsLoading(true);
