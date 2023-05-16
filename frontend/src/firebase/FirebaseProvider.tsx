@@ -22,6 +22,7 @@ export const FirebaseContext = createContext<Partial<FirebaseContextProps>>({
 });
 
 export function FirebaseProvider({ children }: { children: React.ReactNode }) {
+    // TODO should use a reducer
     const [provider, setProvider] = useState<GoogleAuthProvider | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
@@ -67,7 +68,8 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
         }
     }, [provider]);
 
-    // Reauthenticate the user
+    // TODO Reauthenticate the user when the token expires and also implement
+    // eager connection
     useEffect(() => {
         const auth = getAuth();
         onAuthStateChanged(auth, async (user) => {

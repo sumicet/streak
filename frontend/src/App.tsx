@@ -88,70 +88,74 @@ function App() {
         setIsLoading(false);
     };
 
+    if (isConnected) {
+        return (
+            <Layout>
+                <Background />
+                <div className="flex flex-col items-center space-y-8">
+                    <div className="bg-col flex h-40 w-40 items-center justify-center rounded-full">
+                        <p className="text-center text-4xl font-semibold text-indigo-600">
+                            {data.streak}
+                        </p>
+                    </div>
+                    <div className="flex space-x-2">
+                        {week.map((day, index) => {
+                            const lastClaimedDay = lastClaimDateToDayOfWeek(data.lastClaimDate);
+                            const isHit =
+                                lastClaimedDay !== null
+                                    ? lastClaimedDay - data.streak < index &&
+                                      index <= lastClaimedDay
+                                    : false;
+
+                            return (
+                                // Should extract into a separate component
+                                <div
+                                    key={`${day}-${index}`}
+                                    className="flex flex-col items-center justify-between space-y-2"
+                                >
+                                    <p
+                                        className={`text-sm ${
+                                            isHit ? 'text-orange-400' : 'text-gray-400'
+                                        } font-semibold leading-6`}
+                                    >
+                                        {day}
+                                    </p>
+                                    {isHit ? (
+                                        <div className="relative h-6 w-6 rounded-full bg-orange-500">
+                                            <div className="absolute top-[-50%]">
+                                                <GiFlame
+                                                    size="1.5rem"
+                                                    color="rgb(249 115 22 / var(--tw-bg-opacity))"
+                                                />
+                                            </div>
+                                            <div className="absolute">
+                                                <CgCheck size="1.5rem" color="white" />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="h-6 w-6 rounded-full bg-gray-300" />
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <button
+                        className="flex w-[150px] items-center justify-center rounded-md bg-black px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                        onClick={handleCheckIn}
+                    >
+                        {isLoading ? <Spinner /> : 'Check-in'}
+                    </button>
+                </div>
+            </Layout>
+        );
+    }
+
     return (
         <Layout>
             <Background />
             <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-                {isConnected ? (
-                    <div className="flex flex-col items-center space-y-8">
-                        <div className="bg-col flex h-40 w-40 items-center justify-center rounded-full">
-                            <p className="text-center text-4xl font-semibold text-indigo-600">
-                                {data.streak}
-                            </p>
-                        </div>
-                        <div className="flex space-x-2">
-                            {week.map((day, index) => {
-                                const lastClaimedDay = lastClaimDateToDayOfWeek(data.lastClaimDate);
-                                const isHit =
-                                    lastClaimedDay !== null
-                                        ? lastClaimedDay - data.streak < index &&
-                                          index <= lastClaimedDay
-                                        : false;
-
-                                return (
-                                    <div
-                                        key={`${day}-${index}`}
-                                        className="flex flex-col items-center justify-between space-y-2"
-                                    >
-                                        <p
-                                            className={`text-sm ${
-                                                isHit ? 'text-orange-400' : 'text-gray-400'
-                                            } font-semibold leading-6`}
-                                        >
-                                            {day}
-                                        </p>
-                                        {isHit ? (
-                                            <div className="relative h-6 w-6 rounded-full bg-orange-500">
-                                                <div className="absolute top-[-50%]">
-                                                    <GiFlame
-                                                        size="1.5rem"
-                                                        color="rgb(249 115 22 / var(--tw-bg-opacity))"
-                                                    />
-                                                </div>
-                                                <div className="absolute">
-                                                    <CgCheck size="1.5rem" color="white" />
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="h-6 w-6 rounded-full bg-gray-300" />
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        <button
-                            className="flex w-[150px] items-center justify-center rounded-md bg-black px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                            onClick={handleCheckIn}
-                        >
-                            {isLoading ? <Spinner /> : 'Check-in'}
-                        </button>
-                    </div>
-                ) : (
-                    <p className="text-center text-4xl font-semibold text-indigo-600">
-                        Please login.
-                    </p>
-                )}
+                <p className="text-center text-4xl font-semibold text-indigo-600">Please login.</p>
             </div>
         </Layout>
     );
